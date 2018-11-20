@@ -36,14 +36,20 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'GET /api/v1/categories' => 'api/getcategories',
+                'GET /api/v1/productosmain' => 'api/getproductos',
+                '/categoria/<id>' => 'site/categoria',
+                '/producto/<id>' => 'site/producto',
+                'GET /api/v1/addcart/<id>' => 'api/addcart',
+                'GET /api/v1/getcart' => 'api/getcart',
+                'GET /api/v1/deleteitem/<id>' => 'api/deleteitem',
+                '/carrito' => 'site/getcarrito'
             ],
         ],
-        */
     ],
     'params' => $params,
 ];

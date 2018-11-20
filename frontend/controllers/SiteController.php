@@ -1,8 +1,11 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Categories;
+use common\models\Products;
 use Yii;
 use yii\base\InvalidParamException;
+use yii\helpers\VarDumper;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -26,24 +29,18 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout', 'signup'],
+                'only' => ['signup'],
                 'rules' => [
                     [
                         'actions' => ['signup'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
                 ],
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'logout' => ['post'],
                 ],
             ],
         ];
@@ -96,6 +93,26 @@ class SiteController extends Controller
                 'model' => $model,
             ]);
         }
+    }
+
+    public function actionCategoria($id){
+        $productos = Products::find()->where(['id_categoria' => $id])->all();
+        $categorias = Categories::find()->where(['status' => 1])->all();
+        $cat = Categories::find()->where(['id' =>$id])->one();
+
+        return $this->render('categorias', [
+            'productos' => $productos,
+            'categorias' => $categorias,
+            'cat' => $cat
+        ]);
+    }
+
+    public function actionProducto($id){
+        $producto = Products::find()->where(['id' => $id])->one();
+
+        return $this->render('producto', [
+            'producto' => $producto
+        ]);
     }
 
     /**
@@ -152,6 +169,8 @@ class SiteController extends Controller
     {
         $model = new SignupForm();
         if ($model->load(Yii::$app->request->post())) {
+
+
             if ($user = $model->signup()) {
                 if (Yii::$app->getUser()->login($user)) {
                     return $this->goHome();
@@ -185,6 +204,29 @@ class SiteController extends Controller
         return $this->render('requestPasswordResetToken', [
             'model' => $model,
         ]);
+    }
+
+    public function actionGetcarrito(){
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $carrito = $_SESSION['cart'];
+
+        $response = [];
+
+        foreach ($carrito['items'] as $key => $c){
+            $p = Products::find()->where(['id' => $c])->one();
+            $response[$key]['id'] =  $p->id;
+            $response[$key]['name'] =  $p->name;
+            $response[$key]['photo'] =  $p->productGalleries[0]->url;
+            $response[$key]['precio'] =  $p->price;
+        }
+
+        return $this->render('carrito', [
+           'productos' => $response
+        ]);
+
     }
 
     /**
